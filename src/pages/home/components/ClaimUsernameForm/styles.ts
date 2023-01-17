@@ -11,3 +11,11 @@ export const Form = styled(Box, {
         gridTemplateColumns: '1ft',
     },
 })
+
+export const FormAnnotation = styled('div', {
+    marginTop: '$2',
+
+    [`> ${Text}`]: {
+        color: '$gray400',
+    }
+})
