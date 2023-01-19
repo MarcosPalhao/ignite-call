@@ -1,3 +1,4 @@
+import { api } from "@/src/lib/axios";
 import { convertTimeStringToMinutes } from "@/src/utils/convert-time-string-to-minutes";
 import { getWeekDays } from "@/src/utils/get-week-days";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,32 +18,32 @@ const timeIntervalsFormSchema = z.object({
             endTime: z.string(),
         }),
     )
-    .length(7)
-    .transform((intervals) => intervals.filter((interval) => interval.enabled))
-    .refine((intervals) => intervals.length > 0, {
-        message: 'Voce precisa selecionar pelo menos um dia da semana!',
-    })
-    .transform((intervals) => {
-        return intervals.map((interval) => {
-            return {
-                weekDay: interval.weekDay,
-                startTimeInMinutes: convertTimeStringToMinutes(interval.startTime),
-                endTimeInMinutes: convertTimeStringToMinutes(interval.endTime),
-            }
+        .length(7)
+        .transform((intervals) => intervals.filter((interval) => interval.enabled))
+        .refine((intervals) => intervals.length > 0, {
+            message: 'Voce precisa selecionar pelo menos um dia da semana!',
         })
-    })
-    .refine(
-        (intervals) => {
-            return intervals.every(
-                (interval) => 
-                    interval.endTimeInMinutes - 60 >= interval.startTimeInMinutes,
-            )
-        },
-        {
-            message: 
-                'O horário de termino deve ser pelo menos 1h distante do inicio',
-        }
-    )
+        .transform((intervals) => {
+            return intervals.map((interval) => {
+                return {
+                    weekDay: interval.weekDay,
+                    startTimeInMinutes: convertTimeStringToMinutes(interval.startTime),
+                    endTimeInMinutes: convertTimeStringToMinutes(interval.endTime),
+                }
+            })
+        })
+        .refine(
+            (intervals) => {
+                return intervals.every(
+                    (interval) =>
+                        interval.endTimeInMinutes - 60 >= interval.startTimeInMinutes,
+                )
+            },
+            {
+                message:
+                    'O horário de termino deve ser pelo menos 1h distante do inicio',
+            }
+        )
 })
 
 type TimeIntervalsFormInput = z.input<typeof timeIntervalsFormSchema>
@@ -80,9 +81,11 @@ export default function TimeIntervals() {
     const intervals = watch('intervals')
 
     async function handleSetTimeIntervals(data: any) {
-        const formData = data as TimeIntervalsFormOutput
+        const { intervals } = data as TimeIntervalsFormOutput
 
-        console.log(data)
+        await api.post('/users/time-intervals', {
+            intervals,
+        })
     }
 
     return (
