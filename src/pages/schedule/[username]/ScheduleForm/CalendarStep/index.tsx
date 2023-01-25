@@ -3,6 +3,7 @@ import { api } from "@/src/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useRouter } from "next/router";
+import { HourglassHigh } from "phosphor-react";
 import { useEffect, useState } from "react";
 import { Container, TimePicker, TimePickerHeader, TimePickerItem, TimePickerList } from "./styles";
 
@@ -11,7 +12,11 @@ interface Availability {
     availableTimes: number[]
 }
 
-export function CalendarStep() {
+interface CalendarStepProps {
+    onSelectDateTime: (date: Date) => void
+}
+
+export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
     const router = useRouter()
@@ -38,11 +43,17 @@ export function CalendarStep() {
             })
 
             return response.data
-        }, 
+        },
         {
             enabled: !!selectedDate,
         }
     )
+
+    function handleSelectTime(hour: number) {
+        const dateWithTime = dayjs(selectedDate).set('hour', hour).startOf('hour').toDate()
+
+        onSelectDateTime(dateWithTime)
+    }
 
     return (
         <Container isTimePickerOpen={isDateSelected}>
@@ -59,6 +70,7 @@ export function CalendarStep() {
                             return (
                                 <TimePickerItem
                                     key={hour}
+                                    onClick={() => handleSelectTime(hour)}
                                     disabled={!availability.availableTimes.includes(hour)}
                                 >
                                     {String(hour).padStart(2, '0')}:00h
